@@ -4,20 +4,18 @@
 
 By the end of this notebook, you will be able to:
 
-- Detect heteroscedasticity using statistical tests
-- Detect autocorrelation (serial correlation)
-- Understand the consequences of violating classical assumptions
-- Apply robust standard errors (HC and HAC)
-- Implement Feasible Generalized Least Squares (GLS)
+- Detect heteroscedasticity and autocorrelation
+- Understand the consequences of these violations
+- Apply modern robust standard errors (HC and HAC)
+- Implement Feasible Generalized Least Squares when appropriate
+- Choose the right remedy for different situations
 
-## 1. Why Do Violations Matter?
+## 1. Why Violations Matter
 
 When heteroscedasticity or autocorrelation is present:
-
-- OLS remains **unbiased** but is **no longer efficient**
-- Standard errors are biased
-- t-statistics and F-tests become unreliable
-- Confidence intervals are incorrect
+- OLS remains **unbiased** but is no longer **efficient**
+- Standard errors are biased → invalid t-tests and confidence intervals
+- Inference becomes unreliable
 
 ## 2. Heteroscedasticity
 
@@ -32,62 +30,57 @@ print("Breusch-Pagan p-value:", bp_test[1])
 ```
 
 **White Test**
-```python
-white_test = sm.stats.diagnostic.het_white(model.resid, model.model.exog)
-```
 
 ### Remedies
 
-1. **Robust Standard Errors** (Recommended in most cases)
+1. **Robust Standard Errors** (Recommended first approach)
 ```python
 model_robust = model.get_robustcov_results(cov_type='HC3')
-print(model_robust.summary())
 ```
 
-2. **Weighted Least Squares / Feasible GLS**
+2. **Weighted / Feasible GLS**
 
-## 3. Autocorrelation (Serial Correlation)
+## 3. Autocorrelation
 
 ### Detection
 
 **Durbin-Watson Test**
 ```python
-print("Durbin-Watson statistic:", model.dw)
+print("Durbin-Watson:", model.dw)
 ```
 
-**Breusch-Godfrey Test** (Better for higher-order autocorrelation)
-```python
-bg_test = sm.stats.diagnostic.acorr_breusch_godfrey(model, nlags=2)
-```
+**Breusch-Godfrey Test** (better for higher lags)
 
 ### Remedies
 
-- Newey-West HAC standard errors
+- **HAC Standard Errors** (Newey-West)
 ```python
-model_hac = model.get_robustcov_results(cov_type='HAC', maxlags=2)
+model_hac = model.get_robustcov_results(cov_type='HAC', maxlags=4)
 ```
-- Cochrane-Orcutt / Prais-Winsten (Feasible GLS)
+- Cochrane-Orcutt / Prais-Winsten
 
-## 4. Practical Recommendations
+## 4. Practical Decision Framework
 
-| Problem              | First Choice                  | Alternative             |
-|----------------------|-------------------------------|-------------------------|
-| Heteroscedasticity   | Robust SE (HC3)               | WLS / FGLS              |
-| Autocorrelation      | HAC (Newey-West)              | Cochrane-Orcutt         |
-| Both                 | HAC                           | Cluster-robust SE       |
+| Problem                    | Recommended Solution          |
+|---------------------------|-------------------------------|
+| Heteroscedasticity only   | HC3 robust SE                 |
+| Autocorrelation           | HAC (Newey-West)              |
+| Both                      | HAC                           |
+| Severe violations         | Consider FGLS or model respecification |
 
-## 5. Key Takeaways from Chapter 4
+## 5. Key Takeaways
 
-- Always test for heteroscedasticity and autocorrelation in time series data
-- Robust standard errors are often the simplest and most robust solution
-- GLS is more efficient when assumptions are correct, but robust SEs are safer in practice
+- Robust standard errors are often the simplest and safest solution
+- They correct inference, not the coefficients themselves
+- Always diagnose first, then choose the remedy
+- Report which type of robust SE you used
 
 ## Exercises
 
-1. Test the import model for heteroscedasticity using the Breusch-Pagan test.
-2. Apply HC3 robust standard errors. How do the results change?
-3. Run the Durbin-Watson test. Is there evidence of autocorrelation?
+1. Test the import model for heteroscedasticity.
+2. Apply HC3 robust standard errors and compare results.
+3. Run the Durbin-Watson test. Is there autocorrelation?
 
 ---
 
-**Next:** Notebook 05 – Dynamic Models and Error Correction
+**Next:** Notebook 05 – Dynamic Models
