@@ -7,59 +7,64 @@
 By the end of this notebook, you will be able to:
 
 - Understand the structure of the General Linear Regression Model
-- Derive and apply Ordinary Least Squares (OLS) estimation
+- Derive and apply Ordinary Least Squares (OLS) estimation (both conceptually and in code)
 - Use `statsmodels` to estimate and interpret regression models
-- Interpret coefficients in an economic context
-- Replicate the import function example from Chapter 1 of the book
+- Interpret regression coefficients in an economic context
+- Replicate and extend the import function example from Chapter 1
+- Perform basic diagnostic checks on residuals
 
 ## 1. Introduction
 
-This notebook introduces the core of classical econometrics: the **General Linear Regression Model** and **Ordinary Least Squares (OLS)** estimation.
+This notebook introduces the foundation of classical econometrics: the **General Linear Regression Model** and **Ordinary Least Squares (OLS)**.
 
-The book begins with a simple but powerful Keynesian open-economy model. We focus on the **import function** as our main example:
+We will use the **import function** from the book as our main running example:
 
 $$
-M_t = \beta_1 + \beta_2 Y_t + \beta_3 \frac{p_m}{p_d} + u_t
+M_t = \beta_1 + \beta_2 Y_t + \beta_3 \left( \frac{p_m}{p_d} \right) + u_t
 $$
 
 Where:
-- $M_t$ = Imports
-- $Y_t$ = Income
-- $p_m / p_d$ = Relative price ratio
+- $M_t$ = Real imports
+- $Y_t$ = Real income
+- $p_m / p_d$ = Relative price of imports to domestic goods
 
 ## 2. The General Linear Regression Model
 
-In matrix form:
+In matrix notation:
 
 $$
 y = X\beta + u$$
 
-**Assumptions (Classical Linear Regression Model):**
+**Key Classical Assumptions:**
 
-1. $E(u) = 0$
-2. $Var(u) = \sigma^2 I$ (Homoscedasticity + no autocorrelation)
-3. $X$ is non-stochastic (fixed in repeated samples)
+1. Linearity in parameters
+2. $E(u) = 0$
+3. No perfect multicollinearity
+4. Homoscedasticity and no autocorrelation (for efficiency)
+5. Exogeneity (for unbiasedness)
 
 ## 3. Ordinary Least Squares (OLS)
 
-OLS finds $\hat{\beta}$ that minimizes the sum of squared residuals:
+OLS minimizes the sum of squared residuals:
 
 $$
-\hat{\beta} = (X'X)^{-1} X'y
+\hat{\beta} = (X'X)^{-1}X'y
 $$
 
-## 4. Application: Import Function (Trinidad & Tobago)
+This estimator is **BLUE** (Best Linear Unbiased Estimator) under the classical assumptions (Gauss-Markov Theorem).
 
-We replicate the example from Chapter 1 using our prepared dataset.
+## 4. Practical Implementation in Python
 
 ```python
+import statsmodels.api as sm
+import pandas as pd
+
 url = "https://raw.githubusercontent.com/solutiongate-learn/econometrics-with-python/main/data/trinidad_tobago_core.csv"
 df = pd.read_csv(url)
 
-# Define dependent and independent variables
 y = df['IMPORTS']
 X = df[['INCOME', 'RATIO']]
-X = sm.add_constant(X)  # Add intercept
+X = sm.add_constant(X)                    # Add intercept
 
 model = sm.OLS(y, X).fit()
 print(model.summary())
@@ -67,28 +72,44 @@ print(model.summary())
 
 ## 5. Interpreting the Results
 
-Key outputs to focus on:
+Focus on these key elements:
 
-- **Coefficients**: Economic interpretation (marginal propensity to import, price elasticity)
-- **Standard Errors & t-statistics**: Statistical significance
-- **R-squared**: Goodness of fit
-- **F-statistic**: Overall significance
+- **Coefficients**: Economic meaning (e.g., marginal propensity to import)
+- **Standard Errors & t-stats**: Precision and significance
+- **p-values**: Probability of observing the result if null is true
+- **R-squared**: Proportion of variance explained
+- **F-statistic**: Overall model significance
 
-Compare these results with the EViews output shown in the book (Exhibit 1.1).
+**Economic Interpretation Example**:
+- A coefficient of 0.38 on INCOME means that, on average, a $1 million increase in income is associated with a $0.38 million increase in imports (holding relative prices constant).
 
-## 6. Key Takeaways from Chapter 1
+## 6. Basic Residual Diagnostics
 
-- OLS is BLUE under the classical assumptions (Gauss-Markov Theorem)
-- Always check economic plausibility of coefficients
-- Interpretation matters more than just statistical significance
+```python
+import matplotlib.pyplot as plt
+
+import seaborn as sns
+
+sns.residplot(x=model.fittedvalues, y=model.resid, lowess=True)
+plt.title('Residuals vs Fitted')
+plt.show()
+```
+
+## 7. Key Takeaways
+
+- OLS is the workhorse of econometrics
+- Always interpret coefficients in economic terms
+- Check residual plots early
+- Statistical significance ≠ economic importance
 - The constant term often has limited economic meaning
 
 ## Exercises
 
-1. Change the model specification and compare results.
-2. Interpret the coefficient on `RATIO` in economic terms.
-3. What happens to the model if we remove the constant term?
+1. Estimate the model without the `RATIO` variable. How does $R^2$ change?
+2. Interpret the coefficient on `INCOME` in plain English.
+3. Plot the residuals. Do you see any patterns?
+4. What economic factors might be missing from this simple import model?
 
 ---
 
-**Next:** Notebook 02 – Evaluating OLS Fit and Inference
+**Next Notebook:** `02_Evaluating_OLS_Fit_and_Inference.md`
