@@ -4,48 +4,42 @@
 
 By the end of this notebook, you will be able to:
 
-- Detect multicollinearity using VIF and Condition Number
-- Understand the consequences of multicollinearity
+- Detect multicollinearity and understand its consequences
+- Use VIF and Condition Number to diagnose multicollinearity
 - Identify model misspecification
-- Use and interpret dummy variables
-- Apply Ramsey RESET test for functional form misspecification
+- Apply and interpret dummy variables
+- Use the Ramsey RESET test for functional form misspecification
 
 ## 1. Multicollinearity
 
 ### The Problem
 
-Multicollinearity occurs when independent variables are highly correlated. It does not bias coefficients but makes them **imprecise** (high standard errors).
+Multicollinearity occurs when independent variables are highly correlated. It does **not** bias coefficients but makes them **imprecise** (large standard errors).
 
 ### Detection
 
+**Variance Inflation Factor (VIF)**
+
 ```python
-# Variance Inflation Factor (VIF)
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-vif_data = pd.DataFrame()
-vif_data["Variable"] = X.columns
-vif_data["VIF"] = [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
-print(vif_data)
+vif = pd.DataFrame()
+vif["Variable"] = X.columns
+vif["VIF"] = [variance_inflation_factor(X.values, i) for i in range(len(X.columns))]
+print(vif)
 ```
 
 **Rules of thumb**:
-- VIF > 5 or 10 → Potential problem
+- VIF > 5 or 10 → Potential multicollinearity problem
 - Condition Number > 30 → Severe multicollinearity
 
-### Solutions
+### Consequences & Solutions
 
-- Remove one of the correlated variables
-- Combine variables (e.g., principal components)
-- Collect more data
-- Accept it if prediction is the goal (not inference)
+- Coefficients have large standard errors
+- Individual t-tests may be insignificant even if the model is good
+- Solutions: Drop one variable, combine variables, or accept it if prediction is the goal
 
 ## 2. Model Misspecification
-
-### Types of Misspecification
-
-- Omitted variable bias
-- Wrong functional form
-- Incorrect variable measurement
 
 ### Ramsey RESET Test
 
@@ -58,31 +52,28 @@ print(reset_test)
 
 ## 3. Dummy Variables
 
-Dummy variables allow us to include categorical information.
+Dummy variables allow inclusion of categorical information.
 
-### Interpretation
-
+**Interpretation**:
 - Coefficient on dummy = difference in intercept between groups
-- Interaction terms = difference in slopes
+- Interaction term = difference in slope between groups
 
 ```python
-# Example: Adding a dummy variable
-model_with_dummy = smf.ols('IMPORTS ~ INCOME + RATIO + C(Period)', data=df).fit()
-print(model_with_dummy.summary())
+model_dummy = smf.ols('IMPORTS ~ INCOME + RATIO + C(HighIncome)', data=df).fit()
 ```
 
-## 4. Key Takeaways from Chapter 3
+## 4. Key Takeaways
 
-- Multicollinearity affects precision, not unbiasedness
 - Always check VIF when you have multiple regressors
-- Dummy variables are powerful but require careful interpretation
-- Specification testing (like RESET) should be part of your workflow
+- Multicollinearity affects precision, not bias
+- Dummy variables are powerful but need careful interpretation
+- Use RESET test to check functional form
 
 ## Exercises
 
-1. Calculate VIF for the import model. Is multicollinearity a concern?
-2. Add a dummy variable to the model and interpret the coefficient.
-3. Run the RESET test. What does the result suggest?
+1. Calculate VIF for the import model. Is multicollinearity present?
+2. Add a dummy variable and interpret its coefficient.
+3. Run the RESET test. What does the result suggest about the model?
 
 ---
 
