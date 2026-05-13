@@ -41,4 +41,66 @@ We aim to explain not just *how* to run regressions, but *why* we do certain thi
 
 ## 3. Environment Setup
 
-Run the following cell to install the required packages:
+```python
+# ==================== COLAB SETUP ====================
+!pip install -q statsmodels linearmodels pmdarima seaborn
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+from linearmodels.iv import IV2SLS
+
+import warnings
+warnings.filterwarnings('ignore')
+
+sns.set_style("whitegrid")
+plt.rcParams['figure.figsize'] = (10, 6)
+print("Packages loaded successfully!")
+```
+
+## 4. Data Philosophy
+
+The original book uses time series data from Trinidad and Tobago (1967–1991). The full dataset is referenced in Appendix 1.2 and `WT_DATA.XLS`.
+
+In this project:
+
+- We use cleaned versions of the key variables
+- Data is hosted in the repository under `/data/`
+- Notebooks load data directly via raw GitHub URL (no manual upload needed)
+- We prioritize **reproducibility** and **clarity**
+
+## 5. Loading Data
+
+```python
+# Load data from repository (raw GitHub URL)
+url = "https://raw.githubusercontent.com/solutiongate-learn/econometrics-with-python/main/data/trinidad_tobago_core.csv"
+df = pd.read_csv(url)
+
+df.head()
+```
+
+## 6. Quick Data Exploration
+
+```python
+print("Shape:", df.shape)
+print("\nColumns:", df.columns.tolist())
+print("\nInfo:")
+df.info()
+
+df.describe().T
+```
+
+## 7. Next Steps
+
+In the following notebooks, we will:
+
+- Replicate and extend the examples from the book
+- Focus heavily on **interpretation** and **diagnostics**
+- Compare classical approaches with modern Python implementations
+
+---
+
+**Next Notebook:** `01_OLS_Fundamentals.md`
